@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Card } from './Card';
 import { ModalViewImage } from './Modal/ViewImage';
 
-interface Card {
+export interface Card {
   title: string;
   description: string;
   url: string;
