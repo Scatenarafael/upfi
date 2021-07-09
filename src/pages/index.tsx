@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { Button, Box } from '@chakra-ui/react';
 import { useInfiniteQuery } from 'react-query';
 import { Header } from '../components/Header';
-import { CardList } from '../components/CardList';
+import { Card, CardList } from '../components/CardList';
 import { api } from '../services/api';
 import { Loading } from '../components/Loading';
 import { Error } from '../components/Error';
@@ -30,19 +30,21 @@ export default function Home(): JSX.Element {
     }
   );
 
-  const formattedData = useMemo(() => {
+  const formattedData = useMemo<Card[]>(() => {
     // TODO FORMAT AND FLAT DATA ARRAY
-    console.log(isLoading, ' ', isFetchingNextPage, data);
-    const formdata = data?.pages[0].data.data.map(dt => {
-      return {
-        title: dt.title,
-        description: dt.description,
-        url: dt.url,
-        ts: dt.ts,
-        id: dt.id,
-      };
+    const flatArray: Card[] = [];
+    data?.pages.forEach(page => {
+      page.data.data.forEach((dt: Card) => {
+        flatArray.push({
+          title: dt.title,
+          description: dt.description,
+          url: dt.url,
+          ts: Number(dt.ts),
+          id: dt.id,
+        });
+      });
     });
-    return formdata;
+    return flatArray;
   }, [data]);
 
   return (
@@ -60,6 +62,7 @@ export default function Home(): JSX.Element {
             /* TODO RENDER LOAD MORE BUTTON IF DATA HAS NEXT PAGE */
             hasNextPage && (
               <Button
+                mt="20px"
                 onClick={() => {
                   fetchNextPage();
                 }}
