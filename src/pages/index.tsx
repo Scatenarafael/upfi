@@ -1,17 +1,35 @@
-/* eslint-disable no-nested-ternary */
-import { useMemo } from 'react';
 import { Button, Box } from '@chakra-ui/react';
+import { useMemo } from 'react';
 import { useInfiniteQuery } from 'react-query';
+
 import { Header } from '../components/Header';
-import { Card, CardList } from '../components/CardList';
+import { CardList } from '../components/CardList';
 import { api } from '../services/api';
 import { Loading } from '../components/Loading';
 import { Error } from '../components/Error';
 
+interface Image {
+  title: string;
+  description: string;
+  url: string;
+  ts: number;
+  id: string;
+}
+
+interface GetImagesResponse {
+  after: string;
+  data: Image[];
+}
+
 export default function Home(): JSX.Element {
-  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-  const fetchImages = ({ pageParam = 0 }) =>
-    api.get(`/api/images?after=${pageParam}`);
+  async function fetchImages({ pageParam = null }): Promise<GetImagesResponse> {
+    const { data } = await api('/api/images', {
+      params: {
+        after: pageParam,
+      },
+    });
+    return data;
+  }
 
   const {
     data,
@@ -20,59 +38,38 @@ export default function Home(): JSX.Element {
     isFetchingNextPage,
     fetchNextPage,
     hasNextPage,
-  } = useInfiniteQuery(
-    'images',
-    // TODO AXIOS REQUEST WITH PARAM
-    fetchImages,
-    {
-      // TODO GET AND RETURN NEXT PAGE PARAM
-      getNextPageParam: (lastPage, pages) => lastPage.data.after,
-    }
-  );
+  } = useInfiniteQuery('images', fetchImages, {
+    getNextPageParam: lastPage => lastPage?.after || null,
+  });
 
-  const formattedData = useMemo<Card[]>(() => {
-    // TODO FORMAT AND FLAT DATA ARRAY
-    const flatArray: Card[] = [];
-    data?.pages.forEach(page => {
-      page.data.data.forEach((dt: Card) => {
-        flatArray.push({
-          title: dt.title,
-          description: dt.description,
-          url: dt.url,
-          ts: Number(dt.ts),
-          id: dt.id,
-        });
-      });
+  const formattedData = useMemo(() => {
+    const formatted = data?.pages.flatMap(imageData => {
+      return imageData.data.flat();
     });
-    return flatArray;
+    return formatted;
   }, [data]);
+
+  if (isLoading && !isError) {
+    return <Loading />;
+  }
+
+  if (!isLoading && isError) {
+    return <Error />;
+  }
 
   return (
     <>
       <Header />
 
-      {isLoading ? (
-        <Loading />
-      ) : isError ? (
-        <Error />
-      ) : (
-        <Box maxW={1120} px={20} mx="auto" my={20}>
-          <CardList cards={formattedData} />
-          {
-            /* TODO RENDER LOAD MORE BUTTON IF DATA HAS NEXT PAGE */
-            hasNextPage && (
-              <Button
-                mt="20px"
-                onClick={() => {
-                  fetchNextPage();
-                }}
-              >
-                {isFetchingNextPage ? 'Carregando...' : 'Carregar mais'}
-              </Button>
-            )
-          }
-        </Box>
-      )}
+      <Box maxW={1120} px={[10, 15, 20]} mx="auto" my={[10, 15, 20]}>
+        <CardList cards={formattedData} />
+
+        {hasNextPage && (
+          <Button onClick={() => fetchNextPage()} disabled={isFetchingNextPage}>
+            {isFetchingNextPage ? 'Carregando...' : 'Carregar mais'}
+          </Button>
+        )}
+      </Box>
     </>
   );
 }

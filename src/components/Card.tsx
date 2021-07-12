@@ -6,7 +6,6 @@ import {
   Skeleton,
   SkeletonText,
 } from '@chakra-ui/react';
-
 import { useState } from 'react';
 
 interface Card {
@@ -31,7 +30,7 @@ export function Card({ data, viewImage }: CardProps): JSX.Element {
           src={data.url}
           alt={data.title}
           objectFit="cover"
-          w="100%"
+          w="max"
           h={48}
           borderTopRadius="md"
           onClick={() => viewImage(data.url)}

@@ -38,7 +38,7 @@ export interface FileInputProps {
   localImageUrl: string;
   setLocalImageUrl: Dispatch<SetStateAction<string>>;
   setError: UseFormSetError<FieldValues>;
-  onChange?: (
+  onChange: (
     event: React.ChangeEvent<HTMLInputElement>
   ) => Promise<boolean | void>;
   trigger: UseFormTrigger<FieldValues>;

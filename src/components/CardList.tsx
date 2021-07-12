@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Card } from './Card';
 import { ModalViewImage } from './Modal/ViewImage';
 
-export interface Card {
+interface Card {
   title: string;
   description: string;
   url: string;
@@ -16,35 +16,28 @@ interface CardsProps {
 }
 
 export function CardList({ cards }: CardsProps): JSX.Element {
-  // TODO MODAL USEDISCLOSURE
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { onOpen, isOpen, onClose } = useDisclosure();
 
-  // TODO SELECTED IMAGE URL STATE
-  const [imgUrl, setImgUrl] = useState('');
+  const [currentImageUrl, setCurrentImageUrl] = useState('');
 
-  // TODO FUNCTION HANDLE VIEW IMAGE
-  function handleViewImage(imgUrlparam): void {
+  function handleViewImage(url: string): void {
     onOpen();
-    setImgUrl(imgUrlparam);
+    setCurrentImageUrl(url);
   }
 
   return (
     <>
-      {/* TODO CARD GRID */}
-      <SimpleGrid columns={3} spacing="40px">
-        {cards.map(card => {
-          return (
-            <Card
-              key={`${card.id} ${String(card.ts)}`}
-              data={card}
-              viewImage={handleViewImage}
-            />
-          );
-        })}
+      <SimpleGrid columns={[1, 2, 3]} spacing="40px">
+        {cards.map(card => (
+          <Card key={card.id} data={card} viewImage={handleViewImage} />
+        ))}
       </SimpleGrid>
-      {/* TODO MODALVIEWIMAGE */}
 
-      <ModalViewImage isOpen={isOpen} onClose={onClose} imgUrl={imgUrl} />
+      <ModalViewImage
+        isOpen={isOpen}
+        imgUrl={currentImageUrl}
+        onClose={onClose}
+      />
     </>
   );
 }
